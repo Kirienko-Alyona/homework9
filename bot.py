@@ -10,10 +10,10 @@ def input_error(func):
             return "This name is wrong"
         except ValueError:
             return "The name is not in contacts"
-        except IndexError:
-            return "Please, print name and phone"    
         except TypeError:
-            return "I don't know this command"    
+            return "I don't know this command" 
+        except IndexError:
+            return "Please, print name and phone"       
     return inner
 
 
@@ -25,8 +25,11 @@ def hello_func(*Any, **Any2):
 
 @input_error
 def add_func(name, phone):
-    information_for_persons.update({name: phone})  
-    answer = f"Your new contact added: {name} {phone}"
+    if name and phone:
+        information_for_persons.update({name: phone})  
+        answer = f"Your new contact added: {name} {phone}"
+    else:
+        raise IndexError    
     return answer
 
 
@@ -80,19 +83,19 @@ BOT_COMMANDS = {
     }   
 
 def validation_name(param):
-    if re.findall(r"\w", param):
+    if re.findall(r"\D", param):
         result = param
     else:
-        raise IndexError
-        
+        raise IndexError  
+
     return result
 
 def validation_phone(param):
     if re.findall(r"\d", param):
         result = param
     else:
-        raise IndexError
-        
+        raise IndexError  
+            
     return result    
 
 
