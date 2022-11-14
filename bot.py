@@ -1,8 +1,9 @@
-import re
-
 information_for_persons = {}
 
 def input_error(func):
+    """
+    Декоратор для обробки помилок при виконанні команд бота
+    """
     def inner(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -18,13 +19,20 @@ def input_error(func):
 
 
 @input_error
-def hello_func(*Any, **Any2):
+def hello_func():
+    """
+    Ввічливий бот, вміє вітатися
+    """
     answer = f"How can I help you?"
     return answer
 
 
 @input_error
-def add_func(name, phone):
+def add_func(data):
+    """
+    Додає дані (ім'я та номер телефону) до списку контактів
+    """
+    name, phone = validation_data(data)
     if name and phone:
         information_for_persons.update({name: phone})  
         answer = f"Your new contact added: {name} {phone}"
@@ -34,42 +42,51 @@ def add_func(name, phone):
 
 
 @input_error
-def change_phone_func(name, phone):
-    get_name = information_for_persons.get(name)
-
-    if not get_name:
-        raise ValueError
-    else:    
-        information_for_persons.update({name: phone})
-        answer = f"The phone number for {name} is changed on {phone}"
+def change_phone_func(data):
+    """
+    Змінює номер телефону за ім'ям контакта
+    """
+    name, phone = validation_data(data)
+    get_name = information_for_persons[name]
+    information_for_persons.update({name: phone})
+    answer = f"The phone number for {name} is changed on {phone}"
 
     return answer
 
 @input_error
-def phone_func(name, phone):
-    get_phone = information_for_persons.get(name)
+def phone_func(name):
+    """
+    Повертає номер телефону за ім'ям контакта
+    """
+    new_name = name.strip()
+    get_phone = information_for_persons.get(new_name)
     if not get_phone:
         raise ValueError
     else:
-        answer = f"The phone number for contact {name} is {get_phone}"
+        answer = f"The phone number for contact {new_name}: {get_phone}"
     return answer
 
 
 @input_error
-def show_all_func(*Any, **Any2):
-    answer = []
+def show_all_func():
+    """
+    Виводить на екран весь список контантів
+    """
+    contacts = ""
     if information_for_persons:
-        for keys, values in information_for_persons.items():
-            answer.append("{} {}".format(keys, values))
+        for key, value in information_for_persons.items():
+            contacts += f"{key}: {value}\n"
     else:
         raise ValueError("Your contacts list is empty") 
-    return answer
+    return contacts
 
 
 @input_error
-def exit_func(*Any, **Any2):
-    answer = "Good bye!"
-    return answer  
+def exit_func():
+    """
+    Закінчення роботи бота
+    """
+    return "Good bye!"
 
 BOT_COMMANDS = {
     "hello": hello_func,
@@ -82,59 +99,61 @@ BOT_COMMANDS = {
     "exit": exit_func
     }   
 
-def validation_name(param):
-    if re.findall(r"\D", param):
-        result = param
-    else:
-        raise IndexError  
 
-    return result
+def bot_answer_func(question):
+    """
+    Функція повертає відповідь бота
+    """
+    return BOT_COMMANDS.get(question, incorrect_input_func)
 
-def validation_phone(param):
-    if re.findall(r"\d", param):
-        result = param
-    else:
-        raise IndexError  
-            
-    return result    
+def incorrect_input_func():
+    """
+    Функція корректної обробки невалідних команд для бота
+    """
+    return ValueError("I don't know this command. Try again.") 
 
 
 def input_func(input_string):
-    name = ""
-    phone = ""
-    input_words = input_string.strip().lower().split()
-    if input_string == "good bye":
-        input_command = "good bye"
-    elif input_string == "show all":
-        input_command = "show all"
-    else:
-        input_command = input_words[0] 
-        try:
-            name = validation_name(input_words[1])
-            try:
-                phone = validation_phone(input_words[2])
-            except:
-                phone = "" 
-        except:
-            name = ""        
+    """
+    Функція відокремлює слово-команду для бота
+    """
+    command = input_string
+    data = ""
+    for key in BOT_COMMANDS:
+        if input_string.strip().lower().startswith(key):
+            command = key
+            data = input_string[len(command):]
+            break
+    if data:
+        return bot_answer_func(command)(data)
+    return bot_answer_func(command)()
 
-    return input_command, name, phone
-
+def validation_data(data):
+    """
+    Функція перевіряє чи другим значенням введено ім'я, а третім номер телефону
+    """
+    new_data = data.strip().split(" ") 
+    name = new_data[0]
+    phone = new_data[1]
+    if name.isnumeric():
+        raise ValueError("Name must be in letters")
+    if not phone.isnumeric():
+        raise ValueError("Phone must be in numbers")   
+    return name, phone
 
 def main():
+    """
+    Користувач вводить команду для бота або команду, ім'я, номер телефону через пробіл
+    Функція повертає відповідь бота
+    Бот завершує роботу після слів "good bye" або "close" або "exit"
+    """
     while True:
         input_string = input("Input command, please: ")
-        input_command, name, phone = input_func(input_string)
-        if input_command in BOT_COMMANDS:
-            get_command = BOT_COMMANDS[input_command]
-            print(get_command(name, phone))
-            if get_command() == "Good bye!":
-                break 
-            else:
-                continue              
-        else:
-            raise ValueError("I don't know this command. Try again.") 
-                    
+        get_command = input_func(input_string)
+        print(get_command)
+        if get_command == "Good bye!":
+            break
+
     return           
 
 
