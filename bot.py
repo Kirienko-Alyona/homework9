@@ -1,5 +1,6 @@
 information_for_persons = {}
 
+
 def input_error(func):
     """
     Декоратор для обробки помилок при виконанні команд бота
@@ -14,7 +15,8 @@ def input_error(func):
         except TypeError:
             return "I don't know this command" 
         except IndexError:
-            return "Please, print name and phone"       
+            return "Please, print name and phone"   
+
     return inner
 
 
@@ -24,6 +26,7 @@ def hello_func():
     Ввічливий бот, вміє вітатися
     """
     answer = f"How can I help you?"
+
     return answer
 
 
@@ -38,6 +41,7 @@ def add_func(data):
         answer = f"Your new contact added: {name} {phone}"
     else:
         raise IndexError    
+
     return answer
 
 
@@ -53,6 +57,7 @@ def change_phone_func(data):
 
     return answer
 
+
 @input_error
 def phone_func(name):
     """
@@ -64,6 +69,7 @@ def phone_func(name):
         raise ValueError
     else:
         answer = f"The phone number for contact {new_name}: {get_phone}"
+    
     return answer
 
 
@@ -78,6 +84,7 @@ def show_all_func():
             contacts += f"{key}: {value}\n"
     else:
         raise ValueError("Your contacts list is empty") 
+   
     return contacts
 
 
@@ -87,6 +94,7 @@ def exit_func():
     Закінчення роботи бота
     """
     return "Good bye!"
+
 
 BOT_COMMANDS = {
     "hello": hello_func,
@@ -105,6 +113,7 @@ def bot_answer_func(question):
     Функція повертає відповідь бота
     """
     return BOT_COMMANDS.get(question, incorrect_input_func)
+
 
 def incorrect_input_func():
     """
@@ -126,7 +135,9 @@ def input_func(input_string):
             break
     if data:
         return bot_answer_func(command)(data)
+    
     return bot_answer_func(command)()
+
 
 def validation_data(data):
     """
@@ -139,7 +150,9 @@ def validation_data(data):
         raise ValueError("Name must be in letters")
     if not phone.isnumeric():
         raise ValueError("Phone must be in numbers")   
+    
     return name, phone
+
 
 def main():
     """
